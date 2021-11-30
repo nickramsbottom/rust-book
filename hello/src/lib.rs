@@ -6,6 +6,13 @@ pub struct ThreadPool {
     sender: mpsc::Sender<Message>,
 }
 
+type Job = Box<dyn FnOnce() + Send + 'static>;
+
+enum Message {
+    NewJob(Job),
+    Terminate,
+}
+
 impl ThreadPool {
     /// Create a new ThreadPool.
     ///
@@ -59,16 +66,9 @@ impl Drop for ThreadPool {
     }
 }
 
-type Job = Box<dyn FnOnce() + Send + 'static>;
-
 struct Worker {
     id: usize,
     thread: Option<thread::JoinHandle<()>>,
-}
-
-enum Message {
-    NewJob(Job),
-    Terminate,
 }
 
 impl Worker {
